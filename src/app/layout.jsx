@@ -1,10 +1,14 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Shared/Navbar";
+import NextAuthProvider from "@/provider/NextAuthProvider";
+import Footer from "@/components/Shared/Footer";
 
 const poppins = Poppins({
   weight: ["100", "200", "300", "400", "600", "800"],
 });
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: "Create Next App",
@@ -13,13 +17,16 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${poppins.className} antialiased`}>
-        <nav>
-          <Navbar></Navbar>
-        </nav>
-        <main>{children}</main>
-      </body>
-    </html>
+    <NextAuthProvider>
+      <html lang="en">
+        <body className={`${poppins.className} antialiased`}>
+          <nav>
+            <Navbar></Navbar>
+          </nav>
+          <main>{children}</main>
+          <Footer></Footer>
+        </body>
+      </html>
+    </NextAuthProvider>
   );
 }

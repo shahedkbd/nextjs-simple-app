@@ -4,9 +4,44 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleButton from "../Buttons/GoogleButton";
+import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import { signIn } from "next-auth/react";
 
 export default function LoginComponent() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const params = useSearchParams();
+  const router = useRouter();
+  const callback = params.get("callbackUrl") || "/";
+
+  const handleLogin = async (e) => {
+    setLoading(true);
+    e.preventDefault();
+
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: params.get("callbackUrl") || "/",
+    });
+
+    if (!result.ok) {
+      Swal.fire(
+        "error",
+        "Email password not Matched . Try Google Login / Register",
+        "error",
+      );
+    } else {
+      Swal.fire("success", "Welcome to Kidz Hub", "success");
+      router.push(callback);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
@@ -20,47 +55,51 @@ export default function LoginComponent() {
             Welcome back — let’s get you signed in
           </p>
 
-          {/* Email */}
-          <div className="form-control mt-4">
-            <label className="label">
-              <span className="label-text">Email</span>
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="input input-bordered w-full"
-              required
-            />
-          </div>
-
-          {/* Password with eye icon */}
-          <div className="form-control mt-3">
-            <label className="label">
-              <span className="label-text">Password</span>
-            </label>
-
-            <div className="relative">
+          <form onSubmit={handleLogin}>
+            {/* Email */}
+            <div className="form-control mt-4">
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="input input-bordered w-full pr-10"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                className="input input-bordered w-full"
                 required
               />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
             </div>
-          </div>
 
-          {/* Login Button */}
-          <div className="form-control mt-5">
-            <button className="btn btn-primary w-full">Login</button>
-          </div>
+            {/* Password with eye icon */}
+            <div className="form-control mt-3">
+              <label className="label">
+                <span className="label-text">Password</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="input input-bordered w-full pr-10"
+                  required
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            {/* Login Button */}
+            <div className="form-control mt-5">
+              <button className="btn btn-primary w-full">Login</button>
+            </div>
+          </form>
 
           {/* Divider */}
           <div className="divider">OR</div>

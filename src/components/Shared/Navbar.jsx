@@ -3,6 +3,7 @@
 import React from "react";
 import NavLink from "../Buttons/NavLink";
 import Link from "next/link";
+import AuthButtons from "../Buttons/AuthButtons";
 
 const Navbar = () => {
   const links = (
@@ -13,9 +14,9 @@ const Navbar = () => {
       <li>
         <NavLink href={"/products"}>Products</NavLink>
       </li>
-      <li>
+      {/* <li>
         <NavLink href={"/add-product"}>Add Product</NavLink>
-      </li>
+      </li> */}
     </>
   );
   return (
@@ -43,36 +44,21 @@ const Navbar = () => {
             tabIndex="-1"
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a>Item 3</a>
-            </li>
+            {links}
           </ul>
         </div>
         <Link href={"/"} className="font-black hover:bg-white text-xl">
-          daisyUI
+          nextJS Simple App
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 space-x-3">{links}</ul>
       </div>
       <div className="navbar-end">
-        <Link href={"/login"} className="btn text-white bg-black border-2 border-black">
+        <AuthButtons></AuthButtons>
+        {/* <Link href={"/login"} className="btn text-white bg-black border-2 border-black">
           Login
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

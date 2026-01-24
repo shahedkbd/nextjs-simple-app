@@ -1,18 +1,53 @@
 "use client";
 
+import { postUser } from "@/actions/server/auth";
+import { signIn } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaUpload } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 export default function RegisterComponent() {
   const [showPassword, setShowPassword] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const params = useSearchParams();
+  const router = useRouter();
+  const callbackUrl = params.get("callbackurl") || "/";
 
-  // Handle photo upload preview
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setPhotoPreview(URL.createObjectURL(file));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    const photourl = e.target.photourl.value;
+    // const photoupload = e.target.photoupload.value;
+
+    const newUser = {
+      name,
+      email,
+      password,
+      photo: photourl,
+    };
+    console.log(newUser);
+
+    const result = await postUser(newUser);
+
+    if (result.success) {
+      const login = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: callbackUrl,
+      });
+
+      if (login.ok) {
+        Swal.fire("Success", "Registered Successfully", "success");
+        router.push(callbackUrl);
+      }
+    } else {
+      Swal.fire("error", "এই gmail এ  একটি একাউন্ট আছে । লগিন করুন ", "error");
     }
   };
 
@@ -28,100 +63,77 @@ export default function RegisterComponent() {
             Join us — it takes less than a minute
           </p>
 
-          {/* Full Name */}
-          <div className="form-control mt-4">
-            <label className="label">
-              <span className="label-text">Full Name</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              className="input input-bordered w-full"
-              required
-            />
-          </div>
-
-          {/* Email */}
-          <div className="form-control mt-3">
-            <label className="label">
-              <span className="label-text">Email</span>
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="input input-bordered w-full"
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div className="form-control mt-3">
-            <label className="label">
-              <span className="label-text">Password</span>
-            </label>
-
-            <div className="relative">
+          <form onSubmit={handleSubmit}>
+            {/* Full Name */}
+            <div className="form-control mt-4">
+              <label className="label">
+                <span className="label-text">Full Name</span>
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
-                className="input input-bordered w-full pr-10"
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                className="input input-bordered w-full"
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
             </div>
-          </div>
 
-          {/* Photo URL */}
-          <div className="form-control mt-3">
-            <label className="label">
-              <span className="label-text">Photo URL (Optional)</span>
-            </label>
-            <input
-              type="url"
-              placeholder="https://example.com/photo.jpg"
-              className="input input-bordered w-full"
-            />
-          </div>
-
-          {/* Photo Upload */}
-          <div className="form-control mt-3">
-            <label className="label">
-              <span className="label-text">Upload Photo (Optional)</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer border border-dashed rounded-lg p-3 hover:bg-base-200">
-              <FaUpload />
-              <span className="text-sm">Choose a file</span>
+            {/* Email */}
+            <div className="form-control mt-3">
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
               <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handlePhotoUpload}
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                className="input input-bordered w-full"
+                required
               />
-            </label>
-          </div>
+            </div>
 
-          {/* Photo Preview */}
-          {photoPreview && (
-            <div className="flex justify-center mt-4">
-              <div className="avatar">
-                <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                  <img src={photoPreview} alt="Preview" />
-                </div>
+            {/* Password */}
+            <div className="form-control mt-3">
+              <label className="label">
+                <span className="label-text">Password</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a password"
+                  className="input input-bordered w-full pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
             </div>
-          )}
 
-          {/* Register Button */}
-          <div className="form-control mt-6">
-            <button className="btn btn-primary w-full">Create Account</button>
-          </div>
+            {/* Photo URL */}
+            <div className="form-control mt-3">
+              <label className="label">
+                <span className="label-text">Photo URL</span>
+              </label>
+              <input
+                type="url"
+                name="photourl" required
+                placeholder="https://example.com/photo.jpg"
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            {/* Register Button */}
+            <div className="form-control mt-6">
+              <button className="btn btn-primary w-full">Create Account</button>
+            </div>
+          </form>
 
           {/* Footer */}
           <p className="text-center text-sm mt-4">
